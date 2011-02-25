@@ -1,4 +1,3 @@
-from datetime import datetime
 import os
 from django.db import models
 from django.contrib.auth.models import User
@@ -30,6 +29,10 @@ class Attachment(models.Model):
     attachment_file = models.FileField(_('attachment'), upload_to=attachment_upload)
     created = models.DateTimeField(_('created'), auto_now_add=True)
     modified = models.DateTimeField(_('modified'), auto_now=True)
+    safe = models.BooleanField (_('safe'), default=False)
+    mime_type = models.CharField(_('mime_type'), max_length=50, null=True, blank=True,
+                                 help_text=_('leave empty to handle by file extension'))
+
 
     class Meta:
         ordering = ['-created']

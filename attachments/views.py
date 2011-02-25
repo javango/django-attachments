@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.http import require_POST
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -51,3 +51,28 @@ def delete_attachment(request, attachment_pk):
         request.user.message_set.create(message=ugettext('Your attachment was deleted.'))
     next = request.REQUEST.get('next') or '/'
     return HttpResponseRedirect(next)
+
+def retrieve_attachment(request, attachment_pk, text_as_plain=True, safe=False):
+    
+    attachment = get_object_or_404(Attachment, pk=attachment_pk)
+    # In the next line, we read a whole file into memory. It may be better to use file.chunks()
+    # instead of file.read(), but according to a django-users post -- see
+    # http://groups.google.com/group/django-users/browse_thread/thread/9837fc79c0528db1/647ff82eff26d0b1?lnk=gst&q=chunks#647ff82eff26d0b1
+    # -- that might trigger subtle bugs.
+    safe = safe or attachment.safe
+    mimetype = attachment.mime_type
+
+    if mimetype and mimetype.startswith('text/'):
+        if text_as_plain and not safe:
+            mimetype = 'text/plain';
+            
+    response = HttpResponse(attachment.file.read(), mimetype=mimetype)
+    
+    if not (mimetype=='text/plain' or safe):
+        response['Content-Disposition'] = 'attachment; filename='+attachment.file.name
+
+    # Response.__init__, when not given mimetype, uses the default. We don't want that.
+    if not mimetype:
+        del response['Content-Type']
+            
+    return response

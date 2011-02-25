@@ -8,7 +8,7 @@ class AttachmentForm(forms.ModelForm):
 
     class Meta:
         model = Attachment
-        fields = ('attachment_file',)
+        fields = ('attachment_file', 'mime_type')
 
     def save(self, request, obj, *args, **kwargs):
         self.instance.creator = request.user
