@@ -12,12 +12,19 @@ class AttachmentManager(models.Manager):
                            object_id=obj.id)
 
 class Attachment(models.Model):
+    @staticmethod
     def attachment_upload(instance, filename):
-        """Stores the attachment in a "per module/appname/primary key" folder"""
+        """Stores the attachment in a "per module/appname/object_id" folder"""
+        content_object = instance.content_object
+        try:
+            object_id = content_object.slug
+        except AttributeError:
+            object_id = content_object.pk
+
         return 'attachments/%s/%s/%s' % (
-            '%s_%s' % (instance.content_object._meta.app_label,
-                       instance.content_object._meta.object_name.lower()),
-                       instance.content_object.pk,
+            '%s_%s' % (content_object._meta.app_label,
+                       content_object._meta.object_name.lower()),
+                       object_id,
                        filename)
 
     objects = AttachmentManager()
