@@ -1,0 +1,5 @@
+{% load i18n %}
+<form method="post" enctype="multipart/form-data" action="{{ delete_url }}" class="delete-attachment">{% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}"/>
+    <input class="submit" type="submit" value="{% trans "Delete attachment" %}"/>
+</form>

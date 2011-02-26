@@ -12,7 +12,7 @@ class AttachmentManager(models.Manager):
                            object_id=obj.id)
 
 class Attachment(models.Model):
-    @staticmethod
+    
     def attachment_upload(instance, filename):
         """Stores the attachment in a "per module/appname/object_id" folder"""
         content_object = instance.content_object
@@ -53,3 +53,9 @@ class Attachment(models.Model):
     @property
     def filename(self):
         return os.path.split(self.attachment_file.name)[1]
+    
+    @models.permalink
+    def get_absolute_url(self):
+        return ('attachments.views.retrieve_attachment', [str(self.id)])
+
+    url = property(get_absolute_url)

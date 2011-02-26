@@ -42,6 +42,7 @@ def add_attachment(request, app_label, module_name, pk,
         return render_to_response(template_name, template_context,
                                   RequestContext(request))
 
+@require_POST
 @login_required
 def delete_attachment(request, attachment_pk):
     g = get_object_or_404(Attachment, pk=attachment_pk)
@@ -49,7 +50,7 @@ def delete_attachment(request, attachment_pk):
        or request.user == g.creator:
         g.delete()
         request.user.message_set.create(message=ugettext('Your attachment was deleted.'))
-    next = request.REQUEST.get('next') or '/'
+    next = request.POST.get('next') or '/'
     return HttpResponseRedirect(next)
 
 def retrieve_attachment(request, attachment_pk, text_as_plain=True, safe=False):
@@ -65,11 +66,12 @@ def retrieve_attachment(request, attachment_pk, text_as_plain=True, safe=False):
     if mimetype and mimetype.startswith('text/'):
         if text_as_plain and not safe:
             mimetype = 'text/plain';
-            
-    response = HttpResponse(attachment.file.read(), mimetype=mimetype)
+
+    file = attachment.attachment_file             
+    response = HttpResponse(file.read(), mimetype=mimetype)
     
     if not (mimetype=='text/plain' or safe):
-        response['Content-Disposition'] = 'attachment; filename='+attachment.file.name
+        response['Content-Disposition'] = 'attachment; filename='+attachment.filename
 
     # Response.__init__, when not given mimetype, uses the default. We don't want that.
     if not mimetype:
