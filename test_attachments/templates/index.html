@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% load i18n %}
+{% load attachments_tags %}
+{% block title %}{% trans "Welcome to the testbed" %}{% endblock %}
+{% block content %}
+<header>
+    <h3>{% trans "Objects with a slug" %}</h3>
+</header>
+<ul>
+    {% for obj in sluggish  %}
+    <li>{{ obj.title }} [{{ obj.slug }}]</li>
+        {% get_attachments_for obj %}
+        <table>
+        {% for att in attachments %}
+            <tr title="{{ att }}">
+               <th><a href="{{ att.url }}">{{ att.filename }}</a></th>
+               <td>{{ att.creator }}</td>
+               <td>{{ att.created }}</td>
+               <td>{{ att.mime_type|default:"(by extension)" }}</td>
+               <td>{% if att.safe %}will open in browser{% else %}browser will handle as attachment{% endif %}</td>
+               <td>{% attachment_delete_form att %}</td>
+            </tr>
+        {% endfor %}
+        </table>
+	    <span class="add-attachment">{% attachment_form obj %}</span>
+    {% endfor %}
+</ul>
+<header>
+    <h3>{% trans "Objects with no slug" %}</h3>
+</header>
+<ul>
+    {% for obj in slugless  %}
+    <li>{{ obj.title }}</li>
+        {% get_attachments_for obj %}
+        <table>
+        {% for att in attachments %}
+            <tr title="{{ att }}">
+               <th><a href="{{ att.get_absolute_url }}">{{ att.filename }}</a></th>
+               <td>{{ att.creator }}</td>
+               <td>{{ att.created }}</td>
+               <td>{{ att.mime_type|default:"(by extension)" }}</td>
+               <td>{% if att.safe %}will open in browser{% else %}browser will handle as attachment{% endif %}</td>
+               <td>{% attachment_delete_form att %}</td>
+            </tr>
+        {% endfor %}
+        </table>
+	    {% attachment_form obj %}
+    {% endfor %}
+</ul>
+{% endblock %}

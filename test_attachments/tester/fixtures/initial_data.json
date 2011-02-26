@@ -1,0 +1,17 @@
+[
+  {
+    "pk": 1, 
+    "model": "tester.slugless", 
+    "fields": {
+      "title": "Down with his head"
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "tester.sluggish", 
+    "fields": {
+      "slug": "concious-q", 
+      "title": "Conciousness is produced by Quantum effects"
+    }
+  }
+]
