@@ -43,6 +43,28 @@ Installation:
    This only works for the templatetags, the admin still allows anybody to add
    or delete attachments.
 
+6. (optional) customise the storage object to store files in a location other
+   than in ``MEDIA_ROOT`` or serve from a url other than ``MEDIA_URL``. You may
+   customise the storage object which is used on the FileField. To do this,
+   simply define the following setting in your ``settings.py``::
+     
+     ATTACHMENTS_STORAGE
+
+   The ``ATTACHMENTS_STORAGE`` should be set to an instance of a storage object that you 
+   would like to use instead of the default DefaultStorage object. An example
+   which stores files in a secure location may look like this:: 
+
+     from django.core.files.storage import FileSystemStorage
+     ATTACHMENTS_ROOT = '/path/to/my/secure/location'
+     ATTACHMENTS_URL = '/secure'
+     ATTACHMENTS_STORAGE = FileSystemStorage(
+                                        location=ATTACHMENTS_ROOT,
+                                        base_url=ATTACHMENTS_URL)
+
+   Note that you **must** define both ``location`` and ``base_url`` for this to work.
+   Otherwise django will attempt to load the settings file again to find the
+   ``settings.MEDIA_ROOT`` or ``settings.MEDIA_URL`` defaults, crashing django. 
+
 
 Mind that you serve files!
 ==========================

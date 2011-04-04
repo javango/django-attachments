@@ -8,7 +8,7 @@ from django.core.files.storage import DefaultStorage
 from django.utils.translation import ugettext_lazy as _
 
 # attachment storage can be customised using ATTACHMENTS_STORAGE.
-storage = getattr(settings, 'ATTACHMENTS_STORAGE') or DefaultStorage
+storage = getattr(settings, 'ATTACHMENTS_STORAGE', None) or DefaultStorage()
 
 class AttachmentManager(models.Manager):
     def attachments_for_object(self, obj):

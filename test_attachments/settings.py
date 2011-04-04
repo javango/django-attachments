@@ -110,3 +110,8 @@ INSTALLED_APPS = (
     'attachments',
     'test_attachments.tester'
 )
+
+from django.core.files.storage import FileSystemStorage
+SECURE_ROOT = in_proj('secure')
+ATTACHMENTS_STORAGE = FileSystemStorage(location=SECURE_ROOT,
+          base_url='/secure/')
