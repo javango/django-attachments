@@ -108,7 +108,8 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     
     'attachments',
-    'test_attachments.tester'
+    'test_attachments.tester',
+    'south',
 )
 
 from django.core.files.storage import FileSystemStorage

@@ -12,7 +12,7 @@
         <table>
         {% for att in attachments %}
             <tr title="{{ att }}">
-               <th><a href="{{ att.url }}">{{ att.filename }}</a></th>
+               <th><a href="{{ att.url }}">{{ att.link_name }}</a></th>
                <td>{{ att.creator }}</td>
                <td>{{ att.created }}</td>
                <td>{{ att.mime_type|default:"(by extension)" }}</td>

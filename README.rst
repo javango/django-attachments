@@ -28,7 +28,17 @@ Installation:
 
     ./manage.py syncdb
 
-5. Grant the user some permissons:
+5. If you are upgrading from a previous version, you may wish to migrate your
+   database using ``south`` ::
+
+    ./manage.py migrate attachments
+
+   you may need to fake the first migration::
+
+    ./manage.py migrate attachments 0001 --fake
+    ./manage.py migrate attachments
+
+6. Grant the user some permissons:
 
    * For **adding attachments** grant the user (or group) the permission
      ``attachments.add_attachments``.
@@ -43,7 +53,7 @@ Installation:
    This only works for the templatetags, the admin still allows anybody to add
    or delete attachments.
 
-6. (optional) customise the storage object to store files in a location other
+7. (optional) customise the storage object to store files in a location other
    than in ``MEDIA_ROOT`` or serve from a url other than ``MEDIA_URL``. You may
    customise the storage object which is used on the FileField. To do this,
    simply define the following setting in your ``settings.py``::
@@ -145,7 +155,7 @@ Quick Example:
     <ul>
     {% for attachment in my_entry_attachments %}
         <li>
-            <a href="{{ attachment.attachment_file.url }}">{{ attachment.filename }}</a>
+            <a href="{{ attachment.attachment_file.url }}">{{ attachment.link_name }}</a>
             {% attachment_delete_link attachment %}
         </li>
     {% endfor %}
@@ -182,6 +192,24 @@ Finally, create the Attachment object and save it, and close the file handle::
 
 Changelog:
 ==========
+
+v0.4 (2011-04-4):
+ 
+    * Added a new field display_name to the Attachments model. South migrations have been
+      provided to help with the transition to using the new field. 
+
+      why add display_name?
+      Previously it wasn't practical to set a nice display name for attachment links.
+      The best we could do was attachment.filename. Now our link text can be whatever we like::
+
+       <a href="/myatt4c_hm3nt_badfilename.pdf">2011 yearly report</a>
+
+      from this template::
+
+       <a href="{{ attachment.attachment_file.url }}">{{ attachment.link_name }}</a>
+
+      where link_name is a convenience function that tries to return display_name if it exists.
+      if not it will return filename.
 
 v0.3.1 (2009-07-29):
 

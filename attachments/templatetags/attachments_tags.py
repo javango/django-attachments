@@ -1,10 +1,30 @@
 from django.template import Library, Node, Variable
-from attachments.forms import AttachmentForm
+from attachments.forms import AttachmentForm, AttachmentDisplayNameForm
 from attachments.views import add_url_for_obj
 from django.core.urlresolvers import reverse
 from attachments.models import Attachment
 
 register = Library()
+
+
+def formcontext(context, obj, Form=AttachmentDisplayNameForm):
+    """
+    Renders an "upload attachment" form, with a configurable Form class.
+    only renders the form if the user owns 
+    ``attachments.add_attachment permission``
+
+    args:
+        Form: The form to render to the user.
+        context: request context
+        obj: the object that this attachment will be attached to.
+    """
+    if context['user'].has_perm('attachments.add_attachment'):
+        return {
+            'form': Form(),
+            'form_url': add_url_for_obj(obj),
+            'next': context['request'].build_absolute_uri(), }
+    else:
+        return {'form': None,}
 
 @register.inclusion_tag('attachments/add_form.html', takes_context=True)
 def attachment_form(context, obj):
@@ -14,16 +34,17 @@ def attachment_form(context, obj):
     The user must own ``attachments.add_attachment permission`` to add
     attachments.
     """
-    if context['user'].has_perm('attachments.add_attachment'):
-        return {
-            'form': AttachmentForm(),
-            'form_url': add_url_for_obj(obj),
-            'next': context['request'].build_absolute_uri(),
-        }
-    else:
-        return {
-            'form': None,
-        }
+    return formcontext(context, obj, AttachmentForm)
+
+@register.inclusion_tag('attachments/add_form.html', takes_context=True)
+def attachment_displayname_form(context, obj):
+    """
+    Renders a "upload attachment" form with the display name field.
+    
+    The user must own ``attachments.add_attachment permission`` to add
+    attachments.
+    """
+    return formcontext(context, obj)
 
 @register.inclusion_tag('attachments/delete_form.html', takes_context=True)
 def attachment_delete_form(context, attachment):

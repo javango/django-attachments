@@ -45,8 +45,9 @@ class Attachment(models.Model):
     safe = models.BooleanField (_('safe'), default=False)
     mime_type = models.CharField(_('mime_type'), max_length=50, null=True, blank=True,
                                  help_text=_('leave empty to handle by file extension'))
-
-
+    display_name = models.CharField(_('display_name'), max_length=256,
+                          null=True, blank=True,
+                          help_text=_('displayed as link text for attachment'))
     class Meta:
         ordering = ['-created']
         permissions = (
@@ -54,7 +55,13 @@ class Attachment(models.Model):
         )
 
     def __unicode__(self):
-        return '%s attached %s' % (self.creator.username, self.attachment_file.name)
+        return ('%s attached %s' %
+                (self.creator.username,
+                 self.display_name or self.attachment_file.name))
+
+    @property
+    def link_name(self):
+        return self.display_name or self.filename
 
     @property
     def filename(self):

@@ -15,3 +15,8 @@ class AttachmentForm(forms.ModelForm):
         self.instance.content_type = ContentType.objects.get_for_model(obj)
         self.instance.object_id = obj.id
         super(AttachmentForm, self).save(*args, **kwargs)
+
+class AttachmentDisplayNameForm(AttachmentForm):
+    class Meta(AttachmentForm.Meta):
+        fields = ('attachment_file', 'display_name', 'mime_type')
+
