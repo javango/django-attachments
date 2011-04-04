@@ -1,9 +1,14 @@
 import os
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from django.core.files.storage import DefaultStorage
 from django.utils.translation import ugettext_lazy as _
+
+# attachment storage can be customised using ATTACHMENTS_STORAGE.
+storage = getattr(settings, 'ATTACHMENTS_STORAGE') or DefaultStorage
 
 class AttachmentManager(models.Manager):
     def attachments_for_object(self, obj):
@@ -33,7 +38,8 @@ class Attachment(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     creator = models.ForeignKey(User, related_name="created_attachments", verbose_name=_('creator'))
-    attachment_file = models.FileField(_('attachment'), upload_to=attachment_upload)
+    attachment_file = models.FileField(_('attachment'),
+                                 upload_to=attachment_upload, storage=storage)
     created = models.DateTimeField(_('created'), auto_now_add=True)
     modified = models.DateTimeField(_('modified'), auto_now=True)
     safe = models.BooleanField (_('safe'), default=False)
