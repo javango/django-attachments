@@ -19,18 +19,41 @@ class AttachmentManager(models.Manager):
 class Attachment(models.Model):
     
     def attachment_upload(instance, filename):
-        """Stores the attachment in a "per module/appname/object_id" folder"""
-        content_object = instance.content_object
-        try:
-            object_id = content_object.slug
-        except AttributeError:
-            object_id = content_object.pk
+        """Stores the attachment in a "per module/appname/primary key" folder"""
 
-        return 'attachments/%s/%s/%s' % (
-            '%s_%s' % (content_object._meta.app_label,
-                       content_object._meta.object_name.lower()),
-                       object_id,
-                       filename)
+        co = instance.content_object
+        try:
+            object_id = co.slug
+        except AttributeError:
+            object_id = co.pk
+
+        extras = [
+            '%s_%s' % (co._meta.app_label,
+                        co._meta.object_name.lower()
+            ),
+            object_id
+        ]
+
+
+        fullname = 'attachments/%s/%s/%s' % (
+                        tuple(extras) + (filename,))
+
+        templates = '/%s/%s/%s'
+        while len(fullname) > 100:
+            try:
+                extras.pop()
+                templates = templates[:-3]
+            except IndexError:
+                break
+            fullname = 'attachments' + (templates % (
+                tuple(extras) + (filename,)))
+
+        if len(fullname) > 100:
+            base, ext = os.path.splitext(fullname)
+            fullname = 'attachments/%s%s' % (base[:30], ext)
+
+        return fullname
+
 
     objects = AttachmentManager()
 
