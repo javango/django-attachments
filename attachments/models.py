@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.files.storage import DefaultStorage
 from django.utils.translation import ugettext_lazy as _
+from django.template.defaultfilters import slugify
 
 # attachment storage can be customised using ATTACHMENTS_STORAGE.
 storage = getattr(settings, 'ATTACHMENTS_STORAGE', None) or DefaultStorage()
@@ -17,9 +18,11 @@ class AttachmentManager(models.Manager):
                            object_id=obj.id)
 
 class Attachment(models.Model):
-    
+
     def attachment_upload(instance, filename):
-        """Stores the attachment in a "per module/appname/primary key" folder"""
+        """
+        Stores the attachment in a "per module/appname/primary key" folder
+        """
 
         co = instance.content_object
         try:
@@ -31,9 +34,11 @@ class Attachment(models.Model):
             '%s_%s' % (co._meta.app_label,
                         co._meta.object_name.lower()
             ),
-            object_id
-        ]
+            object_id]
 
+        # slugify filename before returning its path.
+        base, ext = os.path.splitext(filename.lower())
+        filename = slugify(base) + ext
 
         fullname = 'attachments/%s/%s/%s' % (
                         tuple(extras) + (filename,))
@@ -89,7 +94,7 @@ class Attachment(models.Model):
     @property
     def filename(self):
         return os.path.split(self.attachment_file.name)[1]
-    
+
     @models.permalink
     def get_absolute_url(self):
         return ('attachments.views.retrieve_attachment', [str(self.id)])
