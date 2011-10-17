@@ -26,7 +26,7 @@ class Attachment(models.Model):
 
         co = instance.content_object
         try:
-            object_id = co.slug
+            object_id = co.slug() if callable(co.slug) else co.slug
         except AttributeError:
             object_id = co.pk
 
