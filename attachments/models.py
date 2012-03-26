@@ -30,6 +30,9 @@ class Attachment(models.Model):
         except AttributeError:
             object_id = co.pk
 
+        if object_id == '':
+            object_id = co.pk
+
         extras = [
             '%s_%s' % (co._meta.app_label,
                         co._meta.object_name.lower()
