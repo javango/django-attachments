@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.template.context import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from attachments.models import Attachment
 from attachments.forms import AttachmentForm
 
@@ -30,7 +31,7 @@ def add_attachment(request, app_label, module_name, pk,
 
     if form.is_valid():
         form.save(request, obj)
-        request.user.message_set.create(message=ugettext('Your attachment was uploaded.'))
+        messages.add_message(request, messages.SUCCESS, 'Your attachement was uploaded.')
         return HttpResponseRedirect(next)
     else:
         template_context = {
@@ -49,7 +50,7 @@ def delete_attachment(request, attachment_pk):
     if request.user.has_perm('delete_foreign_attachments') \
        or request.user == g.creator:
         g.delete()
-        request.user.message_set.create(message=ugettext('Your attachment was deleted.'))
+        messages.add_message(request, messages.SUCCESS, 'Your attachment was deleted.')
     next = request.POST.get('next') or '/'
     return HttpResponseRedirect(next)
 
