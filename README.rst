@@ -193,6 +193,21 @@ Finally, create the Attachment object and save it, and close the file handle::
 Changelog:
 ==========
 
+v0.4.1 (2012-10-18):
+
+    * Addeed support for json/ajax in the add/delete views.
+
+      The add_attachment and delete_attachment views will return a json response if called via ajax/json.
+
+      Sample json responses after successfuly upload::
+
+       messages: [{message:"Your attachment was deleted.", title:"Success"}]
+
+      Sample json response after failed upload::
+
+       form_html: "<the html to re-display>"
+       messages: [{message:"Please correct the form errors.", title:"Error"}]
+       
 v0.4 (2011-04-4):
  
     * Added a new field display_name to the Attachments model. South migrations have been

@@ -3,13 +3,28 @@ from django.views.decorators.http import require_POST
 from django.http import HttpResponseRedirect, HttpResponse
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext as _
 from django.template.context import RequestContext
+from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from attachments.models import Attachment
 from attachments.forms import AttachmentForm
+from django.utils import simplejson
+from django.core.serializers.json import DjangoJSONEncoder
 
+def _json_response(request, title, message, content={}):
+    json_messages = []
+    
+    json_messages.append({
+        "title": title,
+        "message": message
+    })
+    
+    content['messages'] = json_messages
+    
+    return HttpResponse(simplejson.dumps(content, cls=DjangoJSONEncoder),  mimetype="application/json")
+    
 def add_url_for_obj(obj):
     return reverse('add_attachment', kwargs={
                         'app_label': obj._meta.app_label,
@@ -21,7 +36,8 @@ def add_url_for_obj(obj):
 @login_required
 def add_attachment(request, app_label, module_name, pk,
                    template_name='attachments/add.html', extra_context={}):
-
+    ajax = request.is_ajax
+    
     next = request.POST.get('next', '/')
     model = get_model(app_label, module_name)
     if model is None:
@@ -31,7 +47,10 @@ def add_attachment(request, app_label, module_name, pk,
 
     if form.is_valid():
         form.save(request, obj)
-        messages.add_message(request, messages.SUCCESS, 'Your attachement was uploaded.')
+        message = _('Your attachement was uploaded.')
+        if ajax:
+            return _json_response(request, _("Success"), message)
+        messages.add_message(request, messages.SUCCESS, message)
         return HttpResponseRedirect(next)
     else:
         template_context = {
@@ -40,17 +59,34 @@ def add_attachment(request, app_label, module_name, pk,
             'next': next,
         }
         template_context.update(extra_context)
+        
+        if ajax:
+            json_context = {
+                            'form_html': render_to_string(template_name, template_context)
+                            }
+            return _json_response(request, _("Error"), _("Please correct the form errors."), json_context)
+        
         return render_to_response(template_name, template_context,
                                   RequestContext(request))
 
 @require_POST
 @login_required
 def delete_attachment(request, attachment_pk):
+    ajax = request.is_ajax
+
     g = get_object_or_404(Attachment, pk=attachment_pk)
     if request.user.has_perm('delete_foreign_attachments') \
        or request.user == g.creator:
         g.delete()
-        messages.add_message(request, messages.SUCCESS, 'Your attachment was deleted.')
+        message = _('Your attachment was deleted.')
+        if ajax:
+            return _json_response(request, _("Success"), message)
+        messages.add_message(request, messages.SUCCESS, message)
+    else:
+        message = _('Permission denied.')
+        if ajax:
+            return _json_response(request, _("Error"), message)        
+        messages.add_message(request, messages.ERROR, message)
     next = request.POST.get('next') or '/'
     return HttpResponseRedirect(next)
 

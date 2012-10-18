@@ -74,11 +74,11 @@ class Attachment(models.Model):
     created = models.DateTimeField(_('created'), auto_now_add=True)
     modified = models.DateTimeField(_('modified'), auto_now=True)
     safe = models.BooleanField (_('safe'), default=False)
-    mime_type = models.CharField(_('mime_type'), max_length=50, null=True, blank=True,
+    mime_type = models.CharField(_('mime type'), max_length=50, null=True, blank=True,
                                  help_text=_('leave empty to handle by file extension'))
-    display_name = models.CharField(_('display_name'), max_length=256,
+    display_name = models.CharField(_('display name'), max_length=256,
                           null=True, blank=True,
-                          help_text=_('displayed as link text for attachment'))
+                          help_text=_('displayed as link text for attachment.'))
     class Meta:
         ordering = ['-created']
         permissions = (

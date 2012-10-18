@@ -1,5 +1,5 @@
 from django.template import Library, Node, Variable
-from attachments.forms import AttachmentForm, AttachmentDisplayNameForm
+from attachments.forms import AttachmentForm
 from attachments.views import add_url_for_obj
 from django.core.urlresolvers import reverse
 from attachments.models import Attachment
@@ -7,7 +7,7 @@ from attachments.models import Attachment
 register = Library()
 
 
-def formcontext(context, obj, Form=AttachmentDisplayNameForm):
+def formcontext(context, obj, Form=AttachmentForm):
     """
     Renders an "upload attachment" form, with a configurable Form class.
     only renders the form if the user owns 
