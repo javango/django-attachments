@@ -202,7 +202,7 @@ v0.4.2 (2013-02-22):
      Add isajaxrequest to the data submitted in the POST
        
        var options = {'data': { isajaxrequest: 'true' } };
-       $('#myform).').ajaxForm(options);
+       $('form.add-attachment).').ajaxForm(options);
      
 v0.4.1 (2012-10-18):
 
