@@ -193,6 +193,17 @@ Finally, create the Attachment object and save it, and close the file handle::
 Changelog:
 ==========
 
+v0.4.2 (2013-02-22):
+
+   * Change the json content_type to text/plain to work with ie8 and other ie versions.  When using jquery setting
+     dataType to 'json' will treat the response as json even with the 'broken' content_type
+   
+   * Workaround for ajax uploads using jquery.form for browsers that don't support XMLHttpRequest level 2.
+     Add isajaxrequest to the data submitted in the POST
+       
+       var options = {'data': { isajaxrequest: 'true' } };
+       $('#myform).').ajaxForm(options);
+     
 v0.4.1 (2012-10-18):
 
     * Addeed support for json/ajax in the add/delete views.

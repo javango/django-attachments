@@ -23,7 +23,8 @@ def _json_response(request, title, message, content={}):
     
     content['messages'] = json_messages
     
-    return HttpResponse(simplejson.dumps(content, cls=DjangoJSONEncoder),  mimetype="application/json")
+    return HttpResponse(simplejson.dumps(content, cls=DjangoJSONEncoder),
+                        content_type='text/html; charset=UTF-8')
     
 def add_url_for_obj(obj):
     return reverse('add_attachment', kwargs={
@@ -36,8 +37,13 @@ def add_url_for_obj(obj):
 @login_required
 def add_attachment(request, app_label, module_name, pk,
                    template_name='attachments/add.html', extra_context={}):
-    ajax = request.is_ajax()
     
+    # when using jquery.forms some browsers must use an iFrame to submit the form data
+    # when using this frame HTTP_X_REQUESTED_WITH is not set correctly
+    # adding isajaxrequest to your jquery.form options can get around this.
+    # var options = {'data': { isajaxrequest: 'true' } }; 
+    ajax = request.is_ajax() or 'isajaxrequest' in request.POST
+
     next = request.POST.get('next', '/')
     model = get_model(app_label, module_name)
     if model is None:
