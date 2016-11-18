@@ -62,7 +62,7 @@ def attachment_delete_form(context, attachment):
            context['user'].has_perm('attachments.delete_attachment')):
         return {
             'next': context['request'].build_absolute_uri(),
-            'delete_url': reverse('delete_attachment', kwargs={'attachment_pk': attachment.pk})
+            'delete_url': reverse('atttachments:delete', kwargs={'attachment_pk': attachment.pk})
         }
     return {'delete_url': None,}
 

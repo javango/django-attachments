@@ -1,7 +1,7 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseRedirect, HttpResponse
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext, ugettext as _
 from django.template.context import RequestContext
@@ -10,8 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from attachments.models import Attachment
 from attachments.forms import AttachmentForm
-from django.utils import simplejson
 from django.core.serializers.json import DjangoJSONEncoder
+import json
 
 def _json_response(request, title, message, content={}):
     json_messages = []
@@ -23,19 +23,19 @@ def _json_response(request, title, message, content={}):
     
     content['messages'] = json_messages
     
-    return HttpResponse(simplejson.dumps(content, cls=DjangoJSONEncoder),
+    return HttpResponse(json.dumps(content, cls=DjangoJSONEncoder),
                         content_type='text/html; charset=UTF-8')
     
 def add_url_for_obj(obj):
-    return reverse('add_attachment', kwargs={
+    return reverse('attachments:add', kwargs={
                         'app_label': obj._meta.app_label,
-                        'module_name': obj._meta.module_name,
+                        'model_name': obj._meta.model_name,
                         'pk': obj.pk
                     })
 
 @require_POST
 @login_required
-def add_attachment(request, app_label, module_name, pk,
+def add_attachment(request, app_label, model_name, pk,
                    template_name='attachments/add.html', extra_context={}):
     
     # when using jquery.forms some browsers must use an iFrame to submit the form data
@@ -45,7 +45,7 @@ def add_attachment(request, app_label, module_name, pk,
     ajax = request.is_ajax() or 'isajaxrequest' in request.POST
 
     next = request.POST.get('next', '/')
-    model = get_model(app_label, module_name)
+    model = apps.get_model(app_label, model_name)
     if model is None:
         return HttpResponseRedirect(next)
     obj = get_object_or_404(model, pk=pk)

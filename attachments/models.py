@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.files.storage import DefaultStorage
 from django.utils.translation import ugettext_lazy as _
 from django.template.defaultfilters import slugify
@@ -17,57 +17,58 @@ class AttachmentManager(models.Manager):
         return self.filter(content_type__pk=object_type.id,
                            object_id=obj.id)
 
-class Attachment(models.Model):
 
-    def attachment_upload(instance, filename):
-        """
-        Stores the attachment in a "per module/appname/primary key" folder
-        """
+def attachment_upload(instance, filename):
+    """
+    Stores the attachment in a "per module/appname/primary key" folder
+    """
 
-        co = instance.content_object
+    co = instance.content_object
+    try:
+        object_id = co.slug() if callable(co.slug) else co.slug
+    except AttributeError:
+        object_id = co.pk
+
+    if object_id == '':
+        object_id = co.pk
+
+    extras = [
+        '%s_%s' % (co._meta.app_label,
+                   co._meta.object_name.lower()
+                   ),
+        object_id]
+
+    # slugify filename before returning its path.
+    base, ext = os.path.splitext(filename.lower())
+    filename = slugify(base) + ext
+
+    fullname = 'attachments/%s/%s/%s' % (
+        tuple(extras) + (filename,))
+
+    templates = '/%s/%s/%s'
+    while len(fullname) > 100:
         try:
-            object_id = co.slug() if callable(co.slug) else co.slug
-        except AttributeError:
-            object_id = co.pk
+            extras.pop()
+            templates = templates[:-3]
+        except IndexError:
+            break
+        fullname = 'attachments' + (templates % (
+            tuple(extras) + (filename,)))
 
-        if object_id == '':
-            object_id = co.pk
+    if len(fullname) > 100:
+        base, ext = os.path.splitext(fullname)
+        fullname = 'attachments/%s%s' % (base[:30], ext)
 
-        extras = [
-            '%s_%s' % (co._meta.app_label,
-                        co._meta.object_name.lower()
-            ),
-            object_id]
+    return fullname
 
-        # slugify filename before returning its path.
-        base, ext = os.path.splitext(filename.lower())
-        filename = slugify(base) + ext
-
-        fullname = 'attachments/%s/%s/%s' % (
-                        tuple(extras) + (filename,))
-
-        templates = '/%s/%s/%s'
-        while len(fullname) > 100:
-            try:
-                extras.pop()
-                templates = templates[:-3]
-            except IndexError:
-                break
-            fullname = 'attachments' + (templates % (
-                tuple(extras) + (filename,)))
-
-        if len(fullname) > 100:
-            base, ext = os.path.splitext(fullname)
-            fullname = 'attachments/%s%s' % (base[:30], ext)
-
-        return fullname
+class Attachment(models.Model):
 
 
     objects = AttachmentManager()
 
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
     creator = models.ForeignKey(User, related_name="created_attachments", verbose_name=_('creator'))
     attachment_file = models.FileField(_('attachment'),
                                  upload_to=attachment_upload, storage=storage)
